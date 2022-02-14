@@ -1,0 +1,4 @@
+export const HORIZONTAL_TILES = 4;
+export const VERTICAL_TILES = 4;
+export const NUMBER_OF_TILES = HORIZONTAL_TILES * VERTICAL_TILES;
+export const TILE_DISPLAY_DURATION = 150;
