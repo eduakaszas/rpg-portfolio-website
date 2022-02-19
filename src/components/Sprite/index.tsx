@@ -59,8 +59,6 @@ export default function Sprite() {
   }
 
   useEffect(() => {
-    console.log('up state change');
-
     globalAnimationTicker.upKeyActive = upKeyActive;
     globalAnimationTicker.rightKeyActive = rightKeyActive;
     globalAnimationTicker.downKeyActive = downKeyActive;
@@ -69,21 +67,13 @@ export default function Sprite() {
   }, [upKeyActive, rightKeyActive, downKeyActive, leftKeyActive]);
 
   function startAnimation() {
-    console.log('starting animation now');
-
     if (!globalAnimationTicker.interval) {
       globalAnimationTicker.SetUp(texture);
       globalAnimationTicker.Start();
     }
   }
 
-  console.log('-------rerender----------');
   startAnimation();
-
-  if (leftKey) console.log('left key is pressed');
-  if (rightKey) console.log('right key is pressed');
-  if (upKey) console.log('up key is pressed');
-  if (downKey) console.log('down key is pressed');
 
   return (
     <sprite position={position}>
