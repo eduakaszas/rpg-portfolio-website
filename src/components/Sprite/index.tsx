@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useLoader, useFrame } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
@@ -11,57 +11,74 @@ import {
   NUMBER_OF_TILES,
   TILE_DISPLAY_DURATION,
 } from '../../constants/SpriteAttributes';
+import { AnimationTicker } from '../AnimationTicker';
 import './useStyles.scss';
-
 interface Sprite {
   position: [x: number, y: number, z: number];
   texture: any;
 }
 
+const globalAnimationTicker = new AnimationTicker();
+
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export default function Sprite() {
   // Sprite attributes
   const [position, setPosition] = useState<Sprite['position']>([0, 0, 0]);
+  const [upKeyActive, setUpKeyActive] = useState(false);
+  const [rightKeyActive, setRightKeyActive] = useState(false);
+  const [downKeyActive, setDownKeyActive] = useState(false);
+  const [leftKeyActive, setLeftKeyActive] = useState(false);
 
   const texture: Sprite['texture'] = useLoader(TextureLoader, spriteImg);
+
   texture.minFilter = THREE.NearestFilter;
   texture.magFilter = THREE.NearestFilter;
-
-  let intervalId: NodeJS.Timer;
-
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-
-  texture.repeat.set(1 / HORIZONTAL_TILES, 1 / VERTICAL_TILES);
-  let currentTile = 0;
-
-  function calculateNextFrame() {
-    currentTile++;
-
-    if (currentTile === NUMBER_OF_TILES) currentTile = 0;
-
-    let currentColumn = currentTile % HORIZONTAL_TILES;
-    texture.offset.x = currentColumn / HORIZONTAL_TILES;
-
-    let currentRow = Math.floor(currentTile / HORIZONTAL_TILES);
-    texture.offset.y = VERTICAL_TILES - currentRow / VERTICAL_TILES;
-  }
-
-  function startAnimation() {
-    intervalId = setInterval(calculateNextFrame, TILE_DISPLAY_DURATION);
-  }
-
-  function stopAnimation() {
-    clearInterval(intervalId);
-  }
-
-  startAnimation();
 
   // Key controls
   const leftKey = useKeyPress(['ArrowLeft', 'a']);
   const rightKey = useKeyPress(['ArrowRight', 'd']);
   const upKey = useKeyPress(['ArrowUp', 'w']);
   const downKey = useKeyPress(['ArrowDown', 's']);
+
+  if (upKeyActive !== upKey) {
+    setUpKeyActive(upKey);
+  }
+
+  if (rightKeyActive !== rightKey) {
+    setRightKeyActive(rightKey);
+  }
+
+  if (downKeyActive !== downKey) {
+    setDownKeyActive(downKey);
+  }
+
+  if (leftKeyActive !== leftKey) {
+    setLeftKeyActive(leftKey);
+  }
+
+  useEffect(() => {
+    console.log('up state change');
+
+    globalAnimationTicker.upKeyActive = upKeyActive;
+    globalAnimationTicker.rightKeyActive = rightKeyActive;
+    globalAnimationTicker.downKeyActive = downKeyActive;
+    globalAnimationTicker.leftKeyActive = leftKeyActive;
+    console.log('hey new up key', globalAnimationTicker.upKeyActive);
+  }, [upKeyActive, rightKeyActive, downKeyActive, leftKeyActive]);
+
+  function startAnimation() {
+    console.log('starting animation now');
+
+    if (!globalAnimationTicker.interval) {
+      globalAnimationTicker.SetUp(texture);
+      globalAnimationTicker.Start();
+    }
+  }
+
+  console.log('-------rerender----------');
+  startAnimation();
 
   if (leftKey) console.log('left key is pressed');
   if (rightKey) console.log('right key is pressed');
